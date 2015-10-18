@@ -10,6 +10,9 @@ RUN apt-get update \
         graphicsmagick \
         zip \
         unzip \
+        sudo \
+        less \
+        mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # gd
@@ -65,6 +68,21 @@ RUN docker-php-ext-install opcache
 
 # zip
 RUN docker-php-ext-install zip
+
+# wp-cli
+ADD https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar /usr/local/bin/wp-cli.phar
+ADD data/wp.sh /usr/local/bin/wp
+RUN chmod +rx /usr/local/bin/wp-cli.phar
+RUN chmod +x /usr/local/bin/wp
+
+# composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer.phar
+RUN chmod +rx /usr/local/bin/composer.phar
+ADD data/composer.sh /usr/local/bin/composer
+RUN chmod +x /usr/local/bin/composer
+
+# security directives
+RUN echo '\n\n; Additional security directives \nphp_admin_value[disable_functions] = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,show_source,system,shell_exec,passthru,exec,popen,proc_open' >> /usr/local/etc/php-fpm.conf
 
 # local php.ini
 COPY data/conf.d/* /usr/local/etc/php/conf.d/

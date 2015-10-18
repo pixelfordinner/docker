@@ -10,6 +10,7 @@ RUN rm /etc/nginx/nginx.conf && \
 
 COPY data/boilerplate/ /etc/nginx/boilerplate/
 COPY data/nginx.conf /etc/nginx/
+COPY data/proxy.conf /etc/nginx/
 COPY data/fastcgi_params /etc/nginx/
 COPY data/mime.types /etc/nginx/
 
