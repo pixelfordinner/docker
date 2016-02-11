@@ -7,7 +7,7 @@ RUN rm /etc/nginx/nginx.conf && \
     rm /etc/nginx/fastcgi_params && \
     rm -rf /etc/nginx/conf.d && \
     rm -rf /etc/nginx/vhost.d && \
-    mkdir -p /etc/nginx/conf.d
+    mkdir -p /etc/nginx/conf.d && \
     mkdir -p /etc/nginx/vhost.d
 
 COPY data/boilerplate/ /etc/nginx/boilerplate/
