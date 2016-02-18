@@ -1,4 +1,4 @@
-FROM php:5.6-fpm
+FROM php:7-fpm
 MAINTAINER Karl Fathi <karl@pixelfordinner.com>
 
 ENV LANG C.UTF-8
@@ -13,6 +13,7 @@ RUN apt-get update \
         sudo \
         less \
         mysql-client \
+        git \
     && rm -rf /var/lib/apt/lists/*
 
 # gd
@@ -47,27 +48,31 @@ RUN buildRequirements="libicu-dev g++" \
     && apt-get install -y --auto-remove ${runtimeRequirements} \
     && rm -rf /var/lib/apt/lists/*
 
-# yaml
-RUN buildRequirements="libyaml-dev" \
-    && apt-get update && apt-get install -y ${buildRequirements} \
-    && pecl install yaml \
-    && echo "extension=yaml.so" > /usr/local/etc/php/conf.d/ext-yaml.ini \
-    && apt-get purge -y ${buildRequirements} \
-    && rm -rf /var/lib/apt/lists/*
-
 # imagick
 RUN runtimeRequirements="libmagickwand-6.q16-dev --no-install-recommends" \
     && apt-get update && apt-get install -y ${runtimeRequirements} \
     && ln -s /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16/MagickWand-config /usr/bin/ \
-    && pecl install imagick \
+    && pecl install imagick-3.4.0RC6 \
     && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini \
     && rm -rf /var/lib/apt/lists/*
 
 # opcache
 RUN docker-php-ext-install opcache
 
+# apcu
+RUN pecl install apcu \
+    && echo "extension=apcu.so" > /usr/local/etc/php/conf.d/ext-apcu.ini
+
 # zip
 RUN docker-php-ext-install zip
+
+# yaml
+RUN buildRequirements="libyaml-dev" \
+    && apt-get update && apt-get install -y ${buildRequirements} \
+    && pecl install yaml-beta \
+    && echo "extension=yaml.so" > /usr/local/etc/php/conf.d/ext-yaml.ini \
+    && apt-get purge -y ${buildRequirements} \
+    && rm -rf /var/lib/apt/lists/*
 
 # wp-cli
 ADD https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar /usr/local/bin/wp-cli.phar
@@ -81,8 +86,14 @@ RUN chmod +rx /usr/local/bin/composer.phar
 ADD data/composer.sh /usr/local/bin/composer
 RUN chmod +x /usr/local/bin/composer
 
+RUN sed -i -e "s/;pm.max_children\s*=\s*yes/catch_workers_output = yes/g" /usr/local/etc/php-fpm.conf
+RUN sed -i -e "s/pm.max_children = 5/pm.max_children = 3/g" /usr/local/etc/php-fpm.conf
+
 # security directives
 RUN echo '\n\n; Additional security directives \nphp_admin_value[disable_functions] = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,show_source,system,shell_exec,passthru,exec,popen,proc_open' >> /usr/local/etc/php-fpm.conf
+RUN echo '\nphp_admin_value[allow_url_include] = Off' >> /usr/local/etc/php-fpm.conf
+# hide errors
+RUN echo '\n\n; Force hide errors \nphp_admin_value[display_errors] = Off' >> /usr/local/etc/php-fpm.conf
 
 # local php.ini
 COPY data/conf.d/* /usr/local/etc/php/conf.d/
