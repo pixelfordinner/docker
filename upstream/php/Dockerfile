@@ -89,12 +89,6 @@ RUN chmod +x /usr/local/bin/composer
 RUN sed -i -e "s/;pm.max_children\s*=\s*yes/catch_workers_output = yes/g" /usr/local/etc/php-fpm.conf
 RUN sed -i -e "s/pm.max_children = 5/pm.max_children = 3/g" /usr/local/etc/php-fpm.conf
 
-# security directives
-RUN echo '\n\n; Additional security directives \nphp_admin_value[disable_functions] = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,show_source,system,shell_exec,passthru,exec,popen,proc_open' >> /usr/local/etc/php-fpm.conf
-RUN echo '\nphp_admin_value[allow_url_include] = Off' >> /usr/local/etc/php-fpm.conf
-# hide errors
-RUN echo '\n\n; Force hide errors \nphp_admin_value[display_errors] = Off' >> /usr/local/etc/php-fpm.conf
-
 # local php.ini
 COPY data/conf.d/* /usr/local/etc/php/conf.d/
 
