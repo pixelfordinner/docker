@@ -59,10 +59,6 @@ RUN runtimeRequirements="libmagickwand-6.q16-dev --no-install-recommends" \
 # opcache
 RUN docker-php-ext-install opcache
 
-# apcu
-RUN pecl install apcu \
-    && echo "extension=apcu.so" > /usr/local/etc/php/conf.d/ext-apcu.ini
-
 # zip
 RUN docker-php-ext-install zip
 
@@ -73,6 +69,12 @@ RUN buildRequirements="libyaml-dev" \
     && echo "extension=yaml.so" > /usr/local/etc/php/conf.d/ext-yaml.ini \
     && apt-get purge -y ${buildRequirements} \
     && rm -rf /var/lib/apt/lists/*
+
+# apcu + apcu-bc (For backwards compat)
+RUN pecl install apcu \
+    && echo "extension=apcu.so" > /usr/local/etc/php/conf.d/ext-apcu.ini  \
+    && pecl install apcu_bc-beta \
+    && echo "extension=apc.so" >> /usr/local/etc/php/conf.d/ext-apcu.ini
 
 # wp-cli
 ADD https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar /usr/local/bin/wp-cli.phar
