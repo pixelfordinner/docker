@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:mainline-alpine
 MAINTAINER Karl Fathi <karl@pixelfordinner.com>
 
 ENV LANG C.UTF-8
